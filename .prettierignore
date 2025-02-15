@@ -1,0 +1,5 @@
+dist
+CHANGELOG.md
+jsr.json
+.prettierignore
+**/*.mdx
