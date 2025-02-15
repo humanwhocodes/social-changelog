@@ -1,0 +1,33 @@
+name: Node CI
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+jobs:
+    test:
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            matrix:
+                os: [windows-latest, macOS-latest, ubuntu-latest]
+                node: [18.x, 20.x, 22.x]
+
+        steps:
+            - uses: actions/checkout@v4
+            - name: Use Node.js ${{ matrix.node }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node }}
+            - name: npm install, build, and test
+              run: |
+                  npm ci
+                  npm run build --if-present
+                  npm test
+              env:
+                  CI: true
+            - name: JSR Publish Test
+              run: npm run test:jsr

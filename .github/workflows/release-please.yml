@@ -1,0 +1,74 @@
+on:
+    push:
+        branches:
+            - main
+name: release-please
+
+permissions:
+    contents: write
+    pull-requests: write
+    id-token: write
+
+jobs:
+    release-please:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: googleapis/release-please-action@7987652d64b4581673a76e33ad5e98e3dd56832f
+              id: release
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            # The logic below handles the npm publication:
+            - uses: actions/checkout@v4
+              # these if statements ensure that a publication only occurs when
+              # a new release is created:
+              if: ${{ steps.release.outputs.release_created }}
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  registry-url: "https://registry.npmjs.org"
+              if: ${{ steps.release.outputs.release_created }}
+
+            - run: npm ci
+              if: ${{ steps.release.outputs.release_created }}
+
+            - name: Publish to npm
+              run: npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+              if: ${{ steps.release.outputs.release_created }}
+
+            - name: Publish to JSR
+              run: |
+                  npm run build
+                  npx jsr publish
+              if: ${{ steps.release.outputs.release_created }}
+
+            - name: Push to latest and version branches branch
+              run: |
+                  git config --global user.email "github-actions[bot]@users.noreply.github.com"
+                  git config --global user.name "github-actions[bot]"
+                  git push -f origin main:v${{ steps.release.outputs.major }}.x
+                  git push -f origin main:latest
+              if: ${{ steps.release.outputs.release_created }}
+              
+            # Generates the social media post
+            - run: node tools/social-post.js > social-post.txt
+              if: ${{ steps.release.outputs.release_created }}
+              env:
+                OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+            # Tweets out release announcement
+            - run: 'npx @humanwhocodes/crosspost -t -b -m -f social-post.txt'
+              if: ${{ steps.release.outputs.release_created }}
+              env:
+                  TWITTER_API_CONSUMER_KEY: ${{ secrets.TWITTER_CONSUMER_KEY }}
+                  TWITTER_API_CONSUMER_SECRET: ${{ secrets.TWITTER_CONSUMER_SECRET }}
+                  TWITTER_ACCESS_TOKEN_KEY: ${{ secrets.TWITTER_ACCESS_TOKEN_KEY }}
+                  TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+                  MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+                  MASTODON_HOST: ${{ secrets.MASTODON_HOST }}
+                  BLUESKY_HOST: ${{ vars.BLUESKY_HOST }}
+                  BLUESKY_IDENTIFIER: ${{ vars.BLUESKY_IDENTIFIER }}
+                  BLUESKY_PASSWORD: ${{ secrets.BLUESKY_PASSWORD }}
