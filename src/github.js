@@ -29,11 +29,13 @@ const GITHUB_API = "https://api.github.com/repos";
  * @throws {Error} If the tag name is invalid.
  */
 function extractVersionFromTagName(tagName) {
-    const match = tagName.match(/v?(\d+\.\d+\.\d+)/);
-    if (!match) {
-        throw new Error(`Invalid tag name: ${tagName}`);
-    }
-    return match[1];
+	const match = tagName.match(/v?(\d+\.\d+\.\d+)/);
+	if (!match) {
+		throw new Error(
+			`Invalid tag name: ${tagName}. Tag name must contain a semver-formatted version number.`,
+		);
+	}
+	return match[1];
 }
 
 /**
@@ -42,35 +44,38 @@ function extractVersionFromTagName(tagName) {
  * @throws {Error} If the repository name is invalid.
  */
 export function validateRepo(repo) {
-    if (typeof repo !== "string" || repo.trim() === "") {
-        throw new Error("Missing repository name");
-    }
-    
-    if (!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(repo)) {
-        throw new Error(`Invalid repository name: ${repo}`);
-    }
+	if (typeof repo !== "string" || repo.trim() === "") {
+		throw new Error("Missing repository name");
+	}
+
+	if (!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(repo)) {
+		throw new Error(`Invalid repository name: ${repo}`);
+	}
 }
 
 /**
  * Fetches a release from GitHub.
  * @param {string} repo The repository to fetch the release from.
- * @param {string} [tagName="latest"] The tag name of the release to fetch.
+ * @param {string} [tagName] The tag name of the release to fetch.
  * @returns {Promise<ReleaseInfo>} The release data.
  * @throws {Error} If the response is not ok.
  */
-export async function fetchRelease(repo, tagName = "latest") {
-    const response = await fetch(`${GITHUB_API}/${repo}/releases/${tagName}`);
-    
-    if (!response.ok) {
-        throw new Error(`Error fetching release: ${response.status} ${response.statusText}`);
-    }
-    
-    const release = /** @type {GitHubRelease} */ (await response.json());
-    
-    return {
-        url: release.html_url,
-        tagName: release.tag_name,
-        version: extractVersionFromTagName(release.tag_name),
-        details: release.body,
-    }
+export async function fetchRelease(repo, tagName) {
+	const url = `${GITHUB_API}/${repo}/releases/${tagName ? `tags/${tagName}` : "latest"}`;
+	const response = await fetch(url);
+
+	if (!response.ok) {
+		throw new Error(
+			`Error fetching release from ${url}: ${response.status} ${response.statusText}`,
+		);
+	}
+
+	const release = /** @type {GitHubRelease} */ (await response.json());
+
+	return {
+		url: release.html_url,
+		tagName: release.tag_name,
+		version: extractVersionFromTagName(release.tag_name),
+		details: release.body,
+	};
 }

@@ -58,6 +58,8 @@ The latest release will be used by default. You can ovveride this by providing t
 npx social-changelog --org humanwhocodes --repo social-changelog --name "Social Changelog" --tag v1.0.0
 ```
 
+**Note:** The tag name must contain a semver-formatted version number.
+
 The CLI outputs the post onto the console so you can capture it or pipe it into another tool.
 
 ## API Usage
