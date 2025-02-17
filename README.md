@@ -8,6 +8,8 @@ If you find this useful, please consider supporting my work with a [donation](ht
 
 A tool that generates social media posts from GitHub releases using AI. Given a GitHub repository and release, it creates an engaging social post summarizing the key changes and improvements. This is useful for automatically creating announcement posts for new releases.
 
+This tool uses [OpenAI](https://platform.openai.com) `gpt-4o-mini` and an OpenAI API token is required.
+
 ## Installation
 
 ```bash
