@@ -1,5 +1,6 @@
 {
   "bump-minor-pre-major": true,
+  "release-as": "0.1.0",
   "packages": {
     ".": {
       "release-type": "node",
