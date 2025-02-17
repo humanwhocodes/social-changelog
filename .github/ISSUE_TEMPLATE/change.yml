@@ -10,16 +10,16 @@ body:
           description: |
               Please explain your use case in as much detail as possible without referring to a specific solution.
           placeholder: |
-              Mentoss currently...
+              Social Changelog currently...
       validations:
           required: true
     - type: textarea
       attributes:
           label: What do you think is the correct solution?
           description: |
-              Please explain how you'd like to change Mentoss to address the problem.
+              Please explain how you'd like to change Social Changelog to address the problem.
           placeholder: |
-              I'd like Mentoss to...
+              I'd like Social Changelog to...
       validations:
           required: true
     - type: checkboxes
