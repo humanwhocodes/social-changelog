@@ -40,7 +40,7 @@
     "url": "https://github.com/sponsors/nzakas"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node -e \"fs.copyFileSync('src/prompt.txt', 'dist/prompt.txt');\"",
     "lint": "eslint src/ tests/",
     "fmt": "prettier --write .",
     "prepublishOnly": "npm run build",
