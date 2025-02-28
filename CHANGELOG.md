@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.1.2...social-changelog-v0.1.3) (2025-02-28)
+
+
+### Bug Fixes
+
+* Ensure message is never longer than 280 chars ([#10](https://github.com/humanwhocodes/social-changelog/issues/10)) ([df9df44](https://github.com/humanwhocodes/social-changelog/commit/df9df44d2d3f27e9c501a71ae5faa7a2829331cb))
+
 ## [0.1.2](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.1.1...social-changelog-v0.1.2) (2025-02-19)
 
 
