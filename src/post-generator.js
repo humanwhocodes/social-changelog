@@ -22,6 +22,14 @@ import { dirname, join } from "node:path";
 /** @typedef {import("./types.js").GptChatCompletionResponse} GptChatCompletionResponse */
 
 //-----------------------------------------------------------------------------
+// Constants
+//-----------------------------------------------------------------------------
+
+const MAX_CHARACTERS = 280;
+const MAX_RETRIES = 3;
+const URL_LENGTH = 27; // Bluesky counts URLs as 27 characters
+
+//-----------------------------------------------------------------------------
 // Helpers
 //-----------------------------------------------------------------------------
 
@@ -51,6 +59,17 @@ function validateGptRole(role) {
 	if (!gptRoles.has(role)) {
 		throw new Error(`Invalid role: ${role}`);
 	}
+}
+
+/**
+ * Measures the length of a social media post in characters using Bluesky rules.
+ * @param {string} text The text to measure.
+ * @returns {number} The length in characters.
+ */
+function getPostLength(text) {
+	// URLs count as exactly 27 characters on Bluesky
+	const urlRegex = /https?:\/\/[^\s]+/g;
+	return text.replace(urlRegex, "x".repeat(URL_LENGTH)).length;
 }
 
 //-----------------------------------------------------------------------------
@@ -132,27 +151,50 @@ export class PostGenerator {
 	}
 
 	/**
-	 * Generates a tweet summary using OpenAI.
+	 * Generates a tweet summary using OpenAI with retry logic for length.
 	 * @param {string} projectName The name of the project.
 	 * @param {ReleaseInfo} release The release information.
 	 * @returns {Promise<string>} The generated tweet
+	 * @throws {Error} If unable to generate a valid post within retries
 	 */
 	async generateSocialPost(projectName, release) {
 		const systemPrompt = this.#prompt || (await readPrompt());
-
 		const { details, url, version } = release;
 
-		const completion = await this.#fetchCompletion({
-			model: "gpt-4o-mini",
-			messages: [
-				{ role: "system", content: systemPrompt },
-				{
-					role: "user",
-					content: `Create a post summarizing this release for ${projectName} ${version}: ${details}\n\nURL is ${url}`,
-				},
-			],
-		});
+		let attempts = 0;
 
-		return completion.choices[0]?.message?.content;
+		while (attempts < MAX_RETRIES) {
+			const completion = await this.#fetchCompletion({
+				model: "gpt-4o-mini",
+				messages: [
+					{
+						role: "system",
+						content:
+							attempts > 0
+								? `${systemPrompt}\n\nPREVIOUS ATTEMPT WAS TOO LONG. Make it shorter!`
+								: systemPrompt,
+					},
+					{
+						role: "user",
+						content: `Create a post summarizing this release for ${projectName} ${version}: ${details}\n\nURL is ${url}`,
+					},
+				],
+			});
+
+			const post = completion.choices[0]?.message?.content;
+			if (!post) {
+				throw new Error("No content received from OpenAI");
+			}
+
+			if (getPostLength(post) <= MAX_CHARACTERS) {
+				return post;
+			}
+
+			attempts++;
+		}
+
+		throw new Error(
+			`Failed to generate post within ${MAX_CHARACTERS} characters after ${MAX_RETRIES} attempts`,
+		);
 	}
 }

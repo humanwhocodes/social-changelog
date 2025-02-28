@@ -150,18 +150,157 @@ describe("PostGenerator", () => {
 				prompt: MOCK_PROMPT,
 			});
 
+			await assert.rejects(
+				() => generator.generateSocialPost("testproject", MOCK_RELEASE),
+				/No content received from OpenAI/,
+			);
+		});
+
+		it("should throw when completion response has no content", async () => {
+			server.post("/v1/chat/completions", {
+				status: 200,
+				body: { choices: [] },
+			});
+
+			const generator = new PostGenerator(OPENAI_TOKEN, {
+				prompt: MOCK_PROMPT,
+			});
+
+			await assert.rejects(
+				() => generator.generateSocialPost("testproject", MOCK_RELEASE),
+				{
+					name: "Error",
+					message: "No content received from OpenAI",
+				},
+			);
+		});
+	});
+
+	describe("generateSocialPost() character limits", () => {
+		it("should retry when post is too long", async () => {
+			const longResponse = {
+				choices: [
+					{
+						message: {
+							content: "x".repeat(281),
+						},
+					},
+				],
+			};
+
+			const goodResponse = {
+				choices: [
+					{
+						message: {
+							content: "Short enough response",
+						},
+					},
+				],
+			};
+
+			server.post("/v1/chat/completions", {
+				status: 200,
+				body: longResponse,
+			});
+
+			server.post("/v1/chat/completions", {
+				status: 200,
+				body: goodResponse,
+			});
+
+			const generator = new PostGenerator(OPENAI_TOKEN, {
+				prompt: MOCK_PROMPT,
+			});
+
 			const post = await generator.generateSocialPost(
 				"testproject",
 				MOCK_RELEASE,
 			);
-			assert.strictEqual(post, undefined);
+			assert.strictEqual(post, "Short enough response");
+		});
+
+		it("should count URLs as 27 characters", async () => {
+			const response = {
+				choices: [
+					{
+						message: {
+							content: `Test message with URL: https://example.com/very/long/url/that/would/normally/be/longer and another https://test.com/url`,
+						},
+					},
+				],
+			};
+
+			server.post("/v1/chat/completions", {
+				status: 200,
+				body: response,
+			});
+
+			const generator = new PostGenerator(OPENAI_TOKEN, {
+				prompt: MOCK_PROMPT,
+			});
+
+			// This should pass because URLs count as 27 chars
+			const post = await generator.generateSocialPost(
+				"testproject",
+				MOCK_RELEASE,
+			);
+			assert.strictEqual(post, response.choices[0].message.content);
+		});
+
+		it("should throw after MAX_RETRIES attempts", async () => {
+			const longResponse = {
+				choices: [
+					{
+						message: {
+							content: "x".repeat(281),
+						},
+					},
+				],
+			};
+
+			// Setup three different responses for three retries
+			server.post("/v1/chat/completions", {
+				status: 200,
+				body: longResponse,
+				headers: {
+					"content-type": "application/json",
+				},
+			});
+
+			server.post("/v1/chat/completions", {
+				status: 200,
+				body: longResponse,
+				headers: {
+					"content-type": "application/json",
+				},
+			});
+
+			server.post("/v1/chat/completions", {
+				status: 200,
+				body: longResponse,
+				headers: {
+					"content-type": "application/json",
+				},
+			});
+
+			const generator = new PostGenerator(OPENAI_TOKEN, {
+				prompt: MOCK_PROMPT,
+			});
+
+			await assert.rejects(
+				() => generator.generateSocialPost("testproject", MOCK_RELEASE),
+				/Failed to generate post within 280 characters after 3 attempts/,
+			);
+
+			// Verify all three attempts were made
+			server.assertAllRoutesCalled();
 		});
 	});
 });
 
 describe("readPrompt()", () => {
 	it("should read the prompt from a file", async () => {
-		const prompt = await readPrompt("./tests/fixtures/prompt.txt");
+		const prompt = await readPrompt();
 		assert.ok(prompt.length > 0);
 	});
 });
