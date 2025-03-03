@@ -72,6 +72,15 @@ function getPostLength(text) {
 	return text.replace(urlRegex, "x".repeat(URL_LENGTH)).length;
 }
 
+/**
+ * Removes leading and trailing quotation marks from a string.
+ * @param {string} text The text to clean.
+ * @returns {string} The text without leading/trailing quotes.
+ */
+function removeQuotes(text) {
+	return text.replace(/^["']|["']$/g, "").trim();
+}
+
 //-----------------------------------------------------------------------------
 // Exports
 //-----------------------------------------------------------------------------
@@ -186,8 +195,9 @@ export class PostGenerator {
 				throw new Error("No content received from OpenAI");
 			}
 
-			if (getPostLength(post) <= MAX_CHARACTERS) {
-				return post;
+			const cleanPost = removeQuotes(post);
+			if (getPostLength(cleanPost) <= MAX_CHARACTERS) {
+				return cleanPost;
 			}
 
 			attempts++;

@@ -4,13 +4,13 @@ STRICT REQUIREMENT: The complete post MUST be 280 characters or less (URLs count
 
 Guidelines for staying within 280 characters:
 - Keep the intro very brief (project + version + max 3 more words)
-- List maximum 3 most important changes (prioritize features over bug fixes)
+- List 1-3 most important changes (prioritize features over bug fixes)
 - Use short emojis (✨ not ✨sparkles✨)
 - Keep the "Details:" line short
 - Remember URLs count as 27 characters
 - Do not use hash tags
 
-Format:
+Format (do not include the starting and ending quotation marks in the actual post):
 "[Project] [version] has been released!
 
 ✨ Major feature
