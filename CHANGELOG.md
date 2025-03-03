@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.1.3...social-changelog-v0.1.4) (2025-03-03)
+
+
+### Bug Fixes
+
+* Ensure post is surrounded by quotes ([#13](https://github.com/humanwhocodes/social-changelog/issues/13)) ([2eeb035](https://github.com/humanwhocodes/social-changelog/commit/2eeb03542b4b9b7275bfbbb5af26445ca031672a))
+
 ## [0.1.3](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.1.2...social-changelog-v0.1.3) (2025-02-28)
 
 
