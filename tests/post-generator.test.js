@@ -174,6 +174,37 @@ describe("PostGenerator", () => {
 				},
 			);
 		});
+
+		it("should remove leading and trailing quotation marks from the response", async () => {
+			const responseWithQuotes = {
+				choices: [
+					{
+						message: {
+							content: '"Test message with quotes"',
+						},
+					},
+				],
+			};
+
+			server.post("/v1/chat/completions", {
+				status: 200,
+				body: responseWithQuotes,
+				headers: {
+					"content-type": "application/json",
+					authorization: `Bearer ${OPENAI_TOKEN}`,
+				},
+			});
+
+			const generator = new PostGenerator(OPENAI_TOKEN, {
+				prompt: MOCK_PROMPT,
+			});
+
+			const post = await generator.generateSocialPost(
+				"testproject",
+				MOCK_RELEASE,
+			);
+			assert.strictEqual(post, "Test message with quotes");
+		});
 	});
 
 	describe("generateSocialPost() character limits", () => {
