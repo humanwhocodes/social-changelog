@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.1.4...social-changelog-v0.2.0) (2025-03-14)
+
+
+### Features
+
+* Switch to OpenAI Responses API ([#16](https://github.com/humanwhocodes/social-changelog/issues/16)) ([83a14e2](https://github.com/humanwhocodes/social-changelog/commit/83a14e29d8fdaaaf7e327dbb3b83e67470e73e54))
+
 ## [0.1.4](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.1.3...social-changelog-v0.1.4) (2025-03-03)
 
 
