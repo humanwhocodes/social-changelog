@@ -25,13 +25,16 @@ const MOCK_RELEASE = {
 	details: "Added new features and fixed bugs",
 };
 
-const MOCK_COMPLETION_RESPONSE = {
-	choices: [
+const MOCK_RESPONSE = {
+	id: "resp_123",
+	output: [
 		{
-			message: {
-				content:
-					"🎉 Exciting release! Project v1.0.0 is out with awesome new features. Check it out! #opensource",
-			},
+			content: [
+				{
+					type: "output_text",
+					text: "🎉 Exciting release! Project v1.0.0 is out with awesome new features. Check it out! #opensource",
+				},
+			],
 		},
 	],
 };
@@ -80,9 +83,9 @@ describe("PostGenerator", () => {
 
 	describe("generateSocialPost()", () => {
 		it("should generate post using provided prompt", async () => {
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 200,
-				body: MOCK_COMPLETION_RESPONSE,
+				body: MOCK_RESPONSE,
 				headers: {
 					"content-type": "application/json",
 					authorization: `Bearer ${OPENAI_TOKEN}`,
@@ -97,16 +100,71 @@ describe("PostGenerator", () => {
 				"testproject",
 				MOCK_RELEASE,
 			);
-			assert.strictEqual(
-				post,
-				MOCK_COMPLETION_RESPONSE.choices[0].message.content,
+			assert.strictEqual(post, MOCK_RESPONSE.output[0].content[0].text);
+		});
+
+		it("should use correct input and previous_response_id when retrying", async () => {
+			const longResponse = {
+				id: "resp_123",
+				output: [
+					{
+						content: [
+							{
+								type: "output_text",
+								text: "x".repeat(281),
+							},
+						],
+					},
+				],
+			};
+
+			const goodResponse = {
+				id: "resp_456",
+				output: [
+					{
+						content: [
+							{
+								type: "output_text",
+								text: "Short enough response",
+							},
+						],
+					},
+				],
+			};
+
+			server.post("/v1/responses", {
+				status: 200,
+				body: longResponse,
+				headers: {
+					"content-type": "application/json",
+					authorization: `Bearer ${OPENAI_TOKEN}`,
+				},
+			});
+
+			server.post("/v1/responses", {
+				status: 200,
+				body: goodResponse,
+				headers: {
+					"content-type": "application/json",
+					authorization: `Bearer ${OPENAI_TOKEN}`,
+				},
+			});
+
+			const generator = new PostGenerator(OPENAI_TOKEN, {
+				prompt: MOCK_PROMPT,
+			});
+
+			const post = await generator.generateSocialPost(
+				"testproject",
+				MOCK_RELEASE,
 			);
+			assert.strictEqual(post, "Short enough response");
 		});
 
 		it("should generate post using prompt from file when no prompt provided", async () => {
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 200,
-				body: MOCK_COMPLETION_RESPONSE,
+				body: MOCK_RESPONSE,
 				headers: {
 					"content-type": "application/json",
 					authorization: `Bearer ${OPENAI_TOKEN}`,
@@ -118,14 +176,11 @@ describe("PostGenerator", () => {
 				"testproject",
 				MOCK_RELEASE,
 			);
-			assert.strictEqual(
-				post,
-				MOCK_COMPLETION_RESPONSE.choices[0].message.content,
-			);
+			assert.strictEqual(post, MOCK_RESPONSE.output[0].content[0].text);
 		});
 
 		it("should handle API errors", async () => {
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 500,
 				body: { error: "Internal Server Error" },
 			});
@@ -141,9 +196,9 @@ describe("PostGenerator", () => {
 		});
 
 		it("should handle missing completion response", async () => {
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 200,
-				body: { choices: [] },
+				body: { output: [] },
 			});
 
 			const generator = new PostGenerator(OPENAI_TOKEN, {
@@ -156,37 +211,22 @@ describe("PostGenerator", () => {
 			);
 		});
 
-		it("should throw when completion response has no content", async () => {
-			server.post("/v1/chat/completions", {
-				status: 200,
-				body: { choices: [] },
-			});
-
-			const generator = new PostGenerator(OPENAI_TOKEN, {
-				prompt: MOCK_PROMPT,
-			});
-
-			await assert.rejects(
-				() => generator.generateSocialPost("testproject", MOCK_RELEASE),
-				{
-					name: "Error",
-					message: "No content received from OpenAI",
-				},
-			);
-		});
-
 		it("should remove leading and trailing quotation marks from the response", async () => {
 			const responseWithQuotes = {
-				choices: [
+				id: "resp_123",
+				output: [
 					{
-						message: {
-							content: '"Test message with quotes"',
-						},
+						content: [
+							{
+								type: "output_text",
+								text: '"Test message with quotes"',
+							},
+						],
 					},
 				],
 			};
 
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 200,
 				body: responseWithQuotes,
 				headers: {
@@ -210,31 +250,39 @@ describe("PostGenerator", () => {
 	describe("generateSocialPost() character limits", () => {
 		it("should retry when post is too long", async () => {
 			const longResponse = {
-				choices: [
+				id: "resp_123",
+				output: [
 					{
-						message: {
-							content: "x".repeat(281),
-						},
+						content: [
+							{
+								type: "output_text",
+								text: "x".repeat(281),
+							},
+						],
 					},
 				],
 			};
 
 			const goodResponse = {
-				choices: [
+				id: "resp_456",
+				output: [
 					{
-						message: {
-							content: "Short enough response",
-						},
+						content: [
+							{
+								type: "output_text",
+								text: "Short enough response",
+							},
+						],
 					},
 				],
 			};
 
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 200,
 				body: longResponse,
 			});
 
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 200,
 				body: goodResponse,
 			});
@@ -252,16 +300,20 @@ describe("PostGenerator", () => {
 
 		it("should count URLs as 27 characters", async () => {
 			const response = {
-				choices: [
+				id: "resp_123",
+				output: [
 					{
-						message: {
-							content: `Test message with URL: https://example.com/very/long/url/that/would/normally/be/longer and another https://test.com/url`,
-						},
+						content: [
+							{
+								type: "output_text",
+								text: `Test message with URL: https://example.com/very/long/url/that/would/normally/be/longer and another https://test.com/url`,
+							},
+						],
 					},
 				],
 			};
 
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 200,
 				body: response,
 			});
@@ -275,22 +327,26 @@ describe("PostGenerator", () => {
 				"testproject",
 				MOCK_RELEASE,
 			);
-			assert.strictEqual(post, response.choices[0].message.content);
+			assert.strictEqual(post, response.output[0].content[0].text);
 		});
 
 		it("should throw after MAX_RETRIES attempts", async () => {
 			const longResponse = {
-				choices: [
+				id: "resp_123",
+				output: [
 					{
-						message: {
-							content: "x".repeat(281),
-						},
+						content: [
+							{
+								type: "output_text",
+								text: "x".repeat(281),
+							},
+						],
 					},
 				],
 			};
 
 			// Setup three different responses for three retries
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 200,
 				body: longResponse,
 				headers: {
@@ -298,7 +354,7 @@ describe("PostGenerator", () => {
 				},
 			});
 
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 200,
 				body: longResponse,
 				headers: {
@@ -306,7 +362,7 @@ describe("PostGenerator", () => {
 				},
 			});
 
-			server.post("/v1/chat/completions", {
+			server.post("/v1/responses", {
 				status: 200,
 				body: longResponse,
 				headers: {
