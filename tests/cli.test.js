@@ -44,12 +44,16 @@ const MOCK_RELEASE = {
 	body: "Test release notes",
 };
 
-const MOCK_COMPLETION = {
-	choices: [
+const MOCK_RESPONSE = {
+	id: "resp_123",
+	output: [
 		{
-			message: {
-				content: "Generated post",
-			},
+			content: [
+				{
+					type: "output_text",
+					text: "Generated post",
+				},
+			],
 		},
 	],
 };
@@ -155,9 +159,9 @@ describe("CLI", () => {
 				body: MOCK_RELEASE,
 			});
 
-			openAIServer.post("/v1/chat/completions", {
+			openAIServer.post("/v1/responses", {
 				status: 200,
-				body: MOCK_COMPLETION,
+				body: MOCK_RESPONSE,
 				headers: {
 					"content-type": "application/json",
 					authorization: "Bearer test-token",
@@ -182,9 +186,9 @@ describe("CLI", () => {
 				body: MOCK_RELEASE,
 			});
 
-			openAIServer.post("/v1/chat/completions", {
+			openAIServer.post("/v1/responses", {
 				status: 200,
-				body: MOCK_COMPLETION,
+				body: MOCK_RESPONSE,
 				headers: {
 					"content-type": "application/json",
 					authorization: "Bearer test-token",
@@ -229,7 +233,7 @@ describe("CLI", () => {
 				body: MOCK_RELEASE,
 			});
 
-			openAIServer.post("/v1/chat/completions", {
+			openAIServer.post("/v1/responses", {
 				status: 500,
 				body: { error: "Internal Server Error" },
 			});
@@ -244,7 +248,9 @@ describe("CLI", () => {
 			]);
 
 			assert.equal(exitCode, 1);
-			assert.ok(testConsole.errors[0].includes("Chat completion failed"));
+			assert.ok(
+				testConsole.errors[0].includes("Response generation failed"),
+			);
 		});
 	});
 
