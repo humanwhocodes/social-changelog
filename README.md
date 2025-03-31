@@ -38,7 +38,7 @@ npx social-changelog --org <org> --repo <repo> --name <project-name>
 - `--tag, -t` - (Optional) Specific release tag to use (defaults to latest)
 - `--help, -h` - Show help information
 
-### Examples
+### CLI Examples
 
 Generate post for latest release:
 
@@ -61,6 +61,18 @@ npx social-changelog --org humanwhocodes --repo social-changelog --name "Social 
 **Note:** The tag name must contain a semver-formatted version number.
 
 The CLI outputs the post onto the console so you can capture it or pipe it into another tool.
+
+### GitHub Workflow Example
+
+If you'd like to use Social Changelog in a GitHub Actions workflow file, you can access information directly from the actions environment to fill in the organization and repository names like this:
+
+```yaml
+# Generates the social media post
+- run: npx @humanwhocodes/social-changelog --org ${{ github.repository_owner }} --repo ${{ github.event.repository.name }} > social-post.txt
+  if: ${{ steps.release.outputs.release_created }}
+  env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
 
 ## API Usage
 
