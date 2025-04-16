@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.2.0...social-changelog-v0.2.1) (2025-04-16)
+
+
+### Bug Fixes
+
+* Update prompt to avoid duplicates and useless info ([61c75b4](https://github.com/humanwhocodes/social-changelog/commit/61c75b4751de0508594d8aeae9295509657b95ca))
+
 ## [0.2.0](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.1.4...social-changelog-v0.2.0) (2025-03-14)
 
 
