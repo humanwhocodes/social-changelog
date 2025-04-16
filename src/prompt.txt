@@ -4,7 +4,10 @@ STRICT REQUIREMENT: The complete post MUST be 280 characters or less (URLs count
 
 Guidelines for staying within 280 characters:
 - Keep the intro very brief (project + version + max 3 more words)
-- List 1-3 most important changes (prioritize features over bug fixes)
+- List 1-4 most important changes (prioritize features over bug fixes)
+- Do not mention the same change more than once even if it's mentioned more than once in the changelog
+- Do not mention GitHub issues or pull requests (examples: fixes #123, refs #456)
+- Ignore anything in parentheses in the changelog
 - Use short emojis (✨ not ✨sparkles✨)
 - Keep the "Details:" line short
 - Remember URLs count as 27 characters
