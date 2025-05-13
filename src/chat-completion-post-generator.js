@@ -18,7 +18,8 @@ import { dirname, join } from "node:path";
 //-----------------------------------------------------------------------------
 
 /** @typedef {import("./types.js").ReleaseInfo} ReleaseInfo */
-/** @typedef {import("./types.js").OpenAIResponse} OpenAIResponse */
+/** @typedef {import("./types.js").GptMessage} GptMessage */
+/** @typedef {import("./types.js").GptChatCompletionResponse} GptChatCompletionResponse */
 
 //-----------------------------------------------------------------------------
 // Constants
@@ -27,6 +28,8 @@ import { dirname, join } from "node:path";
 const MAX_CHARACTERS = 280;
 const MAX_RETRIES = 3;
 const URL_LENGTH = 27; // Bluesky counts URLs as 27 characters
+const API_BASE_URL = "https://api.openai.com/v1/";
+const DEFAULT_MODEL = "gpt-4o-mini";
 
 //-----------------------------------------------------------------------------
 // Helpers
@@ -40,6 +43,24 @@ const URL_LENGTH = 27; // Bluesky counts URLs as 27 characters
 export async function readPrompt() {
 	const currentDir = dirname(fileURLToPath(import.meta.url));
 	return fsp.readFile(join(currentDir, "prompt.txt"), "utf8");
+}
+
+const gptRoles = new Set(["user", "system", "developer"]);
+
+/**
+ * Validates the role of a GPT message.
+ * @param {string} role The role to validate.
+ * @returns {void}
+ * @throws {Error} If the role is invalid.
+ */
+function validateGptRole(role) {
+	if (typeof role !== "string" || role.trim() === "") {
+		throw new Error("Invalid role");
+	}
+
+	if (!gptRoles.has(role)) {
+		throw new Error(`Invalid role: ${role}`);
+	}
 }
 
 /**
@@ -69,7 +90,7 @@ function removeQuotes(text) {
 /**
  * Generates a social media post using OpenAI.
  */
-export class PostGenerator {
+export class ChatCompletionPostGenerator {
 	/**
 	 * The OpenAI API token.
 	 * @type {string}
@@ -83,19 +104,49 @@ export class PostGenerator {
 	#prompt;
 
 	/**
+	 * The API base URL.
+	 * @type {string}
+	 */
+	#baseUrl = API_BASE_URL;
+
+	/**
+	 * The model to use.
+	 * @type {string}
+	 */
+	#model = DEFAULT_MODEL;
+
+	/**
 	 * Creates a new PostGenerator instance.
 	 * @param {string|undefined} token The OpenAI API token.
 	 * @param {Object} [options] The options for the generator.
 	 * @param {string} [options.prompt] The AI prompt.
+	 * @param {string} [options.baseUrl] The API base URL.
+	 * @param {string} [options.model] The model to use.
 	 * @throws {Error} If the token is missing.
 	 */
-	constructor(token, { prompt = "" } = {}) {
+	constructor(token, { prompt = "", baseUrl, model } = {}) {
 		if (!token) {
-			throw new Error("Missing OpenAI API token");
+			throw new Error("Missing API token");
 		}
 
 		if (typeof token !== "string") {
-			throw new Error("OpenAI API token isn't a string");
+			throw new Error("API token isn't a string");
+		}
+
+		if (baseUrl) {
+			if (!model) {
+				throw new Error(
+					"Model is required when using a custom base URL",
+				);
+			}
+
+			this.#baseUrl = baseUrl;
+			this.#model = model;
+
+			// Ensure the base URL ends with a slash
+			if (!this.#baseUrl.endsWith("/")) {
+				this.#baseUrl += "/";
+			}
 		}
 
 		this.#token = token;
@@ -106,19 +157,17 @@ export class PostGenerator {
 	 * Fetches a completion from OpenAI.
 	 * @param {Object} options The options for the completion.
 	 * @param {string} options.model The model to use.
-	 * @param {string | null} [options.instructions] The system instructions.
-	 * @param {string} options.input The user input.
-	 * @param {string | null} [options.previousResponseId] The previous response ID for retries.
-	 * @returns {Promise<OpenAIResponse>} The response data.
+	 * @param {Array<GptMessage>} options.messages The messages to send.
+	 * @returns {Promise<GptChatCompletionResponse>} The completion response.
 	 * @throws {Error} If the response is not ok.
 	 */
-	async #fetchCompletion({
-		model,
-		instructions = null,
-		input,
-		previousResponseId = null,
-	}) {
-		const response = await fetch("https://api.openai.com/v1/responses", {
+	async #fetchCompletion({ model, messages }) {
+		messages.forEach(message => {
+			validateGptRole(message.role);
+		});
+
+		const url = new URL("chat/completions", this.#baseUrl);
+		const response = await fetch(url, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -126,34 +175,18 @@ export class PostGenerator {
 			},
 			body: JSON.stringify({
 				model,
-				instructions,
-				input,
-				previous_response_id: previousResponseId,
+				messages,
 				temperature: 0.7,
 			}),
 		});
 
 		if (!response.ok) {
 			throw new Error(
-				`${response.status} ${response.statusText}: Response generation failed`,
+				`${response.status} ${response.statusText}: Chat completion failed`,
 			);
 		}
 
 		return await response.json();
-	}
-
-	/**
-	 * Extracts the generated text from a response.
-	 * @param {OpenAIResponse} responseData The response data from the API.
-	 * @returns {string} The generated text.
-	 * @throws {Error} If no content is found.
-	 */
-	#extractGeneratedText(responseData) {
-		const message = responseData.output?.[0]?.content?.[0]?.text;
-		if (!message) {
-			throw new Error("No content received from OpenAI");
-		}
-		return message;
 	}
 
 	/**
@@ -166,30 +199,37 @@ export class PostGenerator {
 	async generateSocialPost(projectName, release) {
 		const systemPrompt = this.#prompt || (await readPrompt());
 		const { details, url, version } = release;
-		const input = `Create a post summarizing this release for ${projectName} ${version}: ${details}\n\nURL is ${url}`;
 
 		let attempts = 0;
-		let previousResponseId = null;
 
 		while (attempts < MAX_RETRIES) {
-			const responseData = await this.#fetchCompletion({
-				model: "gpt-4o-mini",
-				instructions: attempts === 0 ? systemPrompt : null,
-				input:
-					attempts === 0
-						? input
-						: "The previous response was too long. Make it shorter.",
-				previousResponseId,
+			const completion = await this.#fetchCompletion({
+				model: this.#model,
+				messages: [
+					{
+						role: "system",
+						content:
+							attempts > 0
+								? `${systemPrompt}\n\nPREVIOUS ATTEMPT WAS TOO LONG. Make it shorter!`
+								: systemPrompt,
+					},
+					{
+						role: "user",
+						content: `Create a post summarizing this release for ${projectName} ${version}: ${details}\n\nURL is ${url}`,
+					},
+				],
 			});
 
-			const post = this.#extractGeneratedText(responseData);
-			const cleanPost = removeQuotes(post);
+			const post = completion.choices[0]?.message?.content;
+			if (!post) {
+				throw new Error("No content received from OpenAI");
+			}
 
+			const cleanPost = removeQuotes(post);
 			if (getPostLength(cleanPost) <= MAX_CHARACTERS) {
 				return cleanPost;
 			}
 
-			previousResponseId = responseData.id;
 			attempts++;
 		}
 

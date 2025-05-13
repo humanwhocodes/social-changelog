@@ -147,3 +147,25 @@ export interface CLIArgs {
 	tag: string | undefined;
 	help: boolean | undefined;
 }
+
+export interface GptMessage {
+	role: string;
+	content: string;
+}
+
+export interface GptChatCompletionResponse {
+	id: string;
+	object: string;
+	created: number;
+	model: string;
+	choices: Array<{
+		index: number;
+		message: GptMessage;
+		finish_reason: string;
+	}>;
+	usage: {
+		prompt_tokens: number;
+		completion_tokens: number;
+		total_tokens: number;
+	};
+}

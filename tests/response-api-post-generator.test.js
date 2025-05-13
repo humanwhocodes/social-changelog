@@ -8,7 +8,10 @@
 //-----------------------------------------------------------------------------
 
 import assert from "node:assert";
-import { PostGenerator, readPrompt } from "../src/post-generator.js";
+import {
+	ResponseAPIPostGenerator,
+	readPrompt,
+} from "../src/response-api-post-generator.js";
 import { MockServer, FetchMocker } from "mentoss";
 
 //-----------------------------------------------------------------------------
@@ -48,7 +51,7 @@ const fetchMocker = new FetchMocker({
 // Tests
 //-----------------------------------------------------------------------------
 
-describe("PostGenerator", () => {
+describe("ResponseAPIPostGenerator", () => {
 	beforeEach(() => {
 		fetchMocker.mockGlobal();
 	});
@@ -61,23 +64,23 @@ describe("PostGenerator", () => {
 	describe("constructor", () => {
 		it("should throw when token is missing", () => {
 			assert.throws(
-				() => new PostGenerator(),
+				() => new ResponseAPIPostGenerator(),
 				/Missing OpenAI API token/,
 			);
 		});
 
 		it("should throw an error when token isn't a string", () => {
 			assert.throws(
-				() => new PostGenerator(123),
+				() => new ResponseAPIPostGenerator(123),
 				/OpenAI API token isn't a string/,
 			);
 		});
 
 		it("should create instance with token and prompt", () => {
-			const generator = new PostGenerator(OPENAI_TOKEN, {
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
 				prompt: MOCK_PROMPT,
 			});
-			assert.ok(generator instanceof PostGenerator);
+			assert.ok(generator instanceof ResponseAPIPostGenerator);
 		});
 	});
 
@@ -92,7 +95,7 @@ describe("PostGenerator", () => {
 				},
 			});
 
-			const generator = new PostGenerator(OPENAI_TOKEN, {
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
 				prompt: MOCK_PROMPT,
 			});
 
@@ -150,7 +153,7 @@ describe("PostGenerator", () => {
 				},
 			});
 
-			const generator = new PostGenerator(OPENAI_TOKEN, {
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
 				prompt: MOCK_PROMPT,
 			});
 
@@ -171,7 +174,7 @@ describe("PostGenerator", () => {
 				},
 			});
 
-			const generator = new PostGenerator(OPENAI_TOKEN);
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN);
 			const post = await generator.generateSocialPost(
 				"testproject",
 				MOCK_RELEASE,
@@ -185,7 +188,7 @@ describe("PostGenerator", () => {
 				body: { error: "Internal Server Error" },
 			});
 
-			const generator = new PostGenerator(OPENAI_TOKEN, {
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
 				prompt: MOCK_PROMPT,
 			});
 
@@ -201,7 +204,7 @@ describe("PostGenerator", () => {
 				body: { output: [] },
 			});
 
-			const generator = new PostGenerator(OPENAI_TOKEN, {
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
 				prompt: MOCK_PROMPT,
 			});
 
@@ -235,7 +238,7 @@ describe("PostGenerator", () => {
 				},
 			});
 
-			const generator = new PostGenerator(OPENAI_TOKEN, {
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
 				prompt: MOCK_PROMPT,
 			});
 
@@ -287,7 +290,7 @@ describe("PostGenerator", () => {
 				body: goodResponse,
 			});
 
-			const generator = new PostGenerator(OPENAI_TOKEN, {
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
 				prompt: MOCK_PROMPT,
 			});
 
@@ -318,7 +321,7 @@ describe("PostGenerator", () => {
 				body: response,
 			});
 
-			const generator = new PostGenerator(OPENAI_TOKEN, {
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
 				prompt: MOCK_PROMPT,
 			});
 
@@ -370,7 +373,7 @@ describe("PostGenerator", () => {
 				},
 			});
 
-			const generator = new PostGenerator(OPENAI_TOKEN, {
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
 				prompt: MOCK_PROMPT,
 			});
 

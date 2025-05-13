@@ -8,6 +8,7 @@ permissions:
     contents: write
     pull-requests: write
     id-token: write
+    models: read
 
 jobs:
     release-please:
@@ -57,7 +58,7 @@ jobs:
             - run: node ./dist/bin.js --org humanwhocodes --repo social-changelog --name "Social Changelog" --tag ${{ steps.release.outputs.tag_name }} > social-post.txt
               if: ${{ steps.release.outputs.release_created }}
               env:
-                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             # Tweets out release announcement
             - run: "npx @humanwhocodes/crosspost -t -b -m -l --file social-post.txt"
