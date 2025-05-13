@@ -80,9 +80,13 @@ If you'd like to use Social Changelog in a GitHub Actions workflow file, you can
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-Alternatively, you can use GitHub Models instead of OpenAI by using the built-in `GITHUB_TOKEN`:
+Alternatively, you can use GitHub Models instead of OpenAI by using the built-in [`GITHUB_TOKEN`](https://docs.github.com/en/github-models/integrating-ai-models-into-your-development-workflow#using-ai-models-with-github-actions):
 
 ```yaml
+# be sure to set permissions for models
+permissions:
+  models: read
+
 # Generates the social media post using GitHub Models
 - run: npx @humanwhocodes/social-changelog --org ${{ github.repository_owner }} --repo ${{ github.event.repository.name }} > social-post.txt
   if: ${{ steps.release.outputs.release_created }}
