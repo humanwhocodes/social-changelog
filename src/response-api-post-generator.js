@@ -69,7 +69,7 @@ function removeQuotes(text) {
 /**
  * Generates a social media post using OpenAI.
  */
-export class PostGenerator {
+export class ResponseAPIPostGenerator {
 	/**
 	 * The OpenAI API token.
 	 * @type {string}

@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------------
 
 import { parseArgs } from "node:util";
-import { PostGenerator } from "./post-generator.js";
+import { ResponseAPIPostGenerator } from "./response-api-post-generator.js";
 import { fetchRelease } from "./github.js";
 
 //-----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ export class CLI {
 
 		try {
 			const release = await fetchRelease(`${org}/${repo}`, flags.tag);
-			const generator = new PostGenerator(token);
+			const generator = new ResponseAPIPostGenerator(token);
 			const post = await generator.generateSocialPost(name, release);
 
 			this.#console.log(post);
