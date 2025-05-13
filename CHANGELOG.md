@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.2.1...social-changelog-v0.3.0) (2025-05-13)
+
+
+### Features
+
+* Add support for GitHub Models ([#26](https://github.com/humanwhocodes/social-changelog/issues/26)) ([55dec8b](https://github.com/humanwhocodes/social-changelog/commit/55dec8b8a68e40e9e07a77aa795efd2bb011aa62))
+
 ## [0.2.1](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.2.0...social-changelog-v0.2.1) (2025-04-16)
 
 
