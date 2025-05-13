@@ -10,6 +10,8 @@ A tool that generates social media posts from GitHub releases using AI. Given a 
 
 This tool uses [OpenAI](https://platform.openai.com) `gpt-4o-mini` and an OpenAI API token is required.
 
+Alternatively, you can use GitHub Models by providing a GitHub token instead.
+
 ## Installation
 
 ```bash
@@ -18,10 +20,14 @@ npm install @humanwhocodes/social-changelog
 
 ## CLI Usage
 
-The command line interface requires an OpenAI API key to be set in the environment:
+The command line interface requires either an OpenAI API key or a GitHub token to be set in the environment:
 
 ```bash
+# Using OpenAI API
 export OPENAI_API_KEY=your-api-key
+
+# OR using GitHub Models
+export GITHUB_TOKEN=your-github-token
 ```
 
 Then you can generate posts using:
@@ -52,7 +58,7 @@ By default, the `org/repo` will be used as the project name. You can override th
 npx social-changelog --org humanwhocodes --repo social-changelog --name "Social Changelog"
 ```
 
-The latest release will be used by default. You can ovveride this by providing the `--tag` option:
+The latest release will be used by default. You can override this by providing the `--tag` option:
 
 ```bash
 npx social-changelog --org humanwhocodes --repo social-changelog --name "Social Changelog" --tag v1.0.0
@@ -67,28 +73,57 @@ The CLI outputs the post onto the console so you can capture it or pipe it into 
 If you'd like to use Social Changelog in a GitHub Actions workflow file, you can access information directly from the actions environment to fill in the organization and repository names like this:
 
 ```yaml
-# Generates the social media post
+# Generates the social media post using OpenAI
 - run: npx @humanwhocodes/social-changelog --org ${{ github.repository_owner }} --repo ${{ github.event.repository.name }} > social-post.txt
   if: ${{ steps.release.outputs.release_created }}
   env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
 
+Alternatively, you can use GitHub Models instead of OpenAI by using the built-in `GITHUB_TOKEN`:
+
+```yaml
+# Generates the social media post using GitHub Models
+- run: npx @humanwhocodes/social-changelog --org ${{ github.repository_owner }} --repo ${{ github.event.repository.name }} > social-post.txt
+  if: ${{ steps.release.outputs.release_created }}
+  env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
 ## API Usage
 
-### `PostGenerator`
+### Post Generators
 
-The main class for generating social posts.
+The library provides two post generator classes:
+
+- `ResponseAPIPostGenerator` (also exported as `PostGenerator` for backwards compatibility) - Uses OpenAI's Responses API
+- `ChatCompletionPostGenerator` - Uses the Chat Completions API, compatible with both OpenAI and GitHub Models
 
 ```javascript
-import { PostGenerator } from "@humanwhocodes/social-changelog";
+import {
+	ResponseAPIPostGenerator,
+	ChatCompletionPostGenerator,
+} from "@humanwhocodes/social-changelog";
 
-// Create generator instance
-const generator = new PostGenerator(process.env.OPENAI_API_KEY, {
-	prompt: "Optional custom prompt",
-});
+// Create generator instance with OpenAI API using Responses API
+const openaiGenerator = new ResponseAPIPostGenerator(
+	process.env.OPENAI_API_KEY,
+	{
+		prompt: "Optional custom prompt",
+	},
+);
 
-// Generate a post
+// Or use GitHub Models with Chat Completions API
+const githubGenerator = new ChatCompletionPostGenerator(
+	process.env.GITHUB_TOKEN,
+	{
+		baseUrl: "https://models.github.ai/inference/",
+		model: "openai/gpt-4.1-mini",
+		prompt: "Optional custom prompt",
+	},
+);
+
+// Generate a post (works with either generator)
 const post = await generator.generateSocialPost("Project Name", {
 	url: "https://github.com/org/repo/releases/v1.0.0",
 	tagName: "v1.0.0",

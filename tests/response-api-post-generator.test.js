@@ -51,7 +51,7 @@ const fetchMocker = new FetchMocker({
 // Tests
 //-----------------------------------------------------------------------------
 
-describe("PostGenerator", () => {
+describe("ResponseAPIPostGenerator", () => {
 	beforeEach(() => {
 		fetchMocker.mockGlobal();
 	});

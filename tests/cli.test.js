@@ -34,8 +34,9 @@ class TestConsole {
 
 const githubServer = new MockServer("https://api.github.com");
 const openAIServer = new MockServer("https://api.openai.com");
+const githubModelsServer = new MockServer("https://models.github.ai");
 const fetchMocker = new FetchMocker({
-	servers: [githubServer, openAIServer],
+	servers: [githubServer, openAIServer, githubModelsServer],
 });
 
 const MOCK_RELEASE = {
@@ -79,6 +80,7 @@ describe("CLI", () => {
 		fetchMocker.unmockGlobal();
 		githubServer.clear();
 		openAIServer.clear();
+		githubModelsServer.clear();
 	});
 
 	describe("constructor", () => {
@@ -250,6 +252,61 @@ describe("CLI", () => {
 			assert.equal(exitCode, 1);
 			assert.ok(
 				testConsole.errors[0].includes("Response generation failed"),
+			);
+		});
+
+		it("should use GitHub Models API when GITHUB_TOKEN is provided", async () => {
+			// Create CLI with GITHUB_TOKEN
+			const githubTokenCli = new CLI({
+				console: testConsole,
+				env: { GITHUB_TOKEN: "github-token" },
+			});
+
+			// Setup mock responses
+			githubServer.get("/repos/test-org/test-repo/releases/latest", {
+				status: 200,
+				body: MOCK_RELEASE,
+			});
+
+			// Setup GitHub Models API response
+			githubModelsServer.post("/inference/chat/completions", {
+				status: 200,
+				body: {
+					choices: [
+						{
+							message: {
+								content: "Generated post with GitHub Models",
+							},
+						},
+					],
+				},
+				headers: {
+					"content-type": "application/json",
+					authorization: "Bearer github-token",
+				},
+			});
+
+			const exitCode = await githubTokenCli.execute([
+				"--org",
+				"test-org",
+				"--repo",
+				"test-repo",
+			]);
+
+			assert.equal(exitCode, 0);
+			assert.equal(
+				testConsole.logs[0],
+				"Generated post with GitHub Models",
+			);
+
+			// Verify OpenAI was not called
+			assert.equal(openAIServer.called("/v1/responses"), false);
+			assert.equal(
+				githubModelsServer.called({
+					url: "/inference/chat/completions",
+					method: "post",
+				}),
+				true,
 			);
 		});
 	});
