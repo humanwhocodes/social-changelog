@@ -8,6 +8,7 @@ permissions:
     contents: write
     pull-requests: write
     id-token: write
+    models: read
 
 jobs:
     release-please:
