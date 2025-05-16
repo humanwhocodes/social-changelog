@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.3.0...social-changelog-v0.4.0) (2025-05-16)
+
+
+### Features
+
+* Add --prompt-file CLI option ([#29](https://github.com/humanwhocodes/social-changelog/issues/29)) ([e29d49e](https://github.com/humanwhocodes/social-changelog/commit/e29d49e1b6c848c661ae6375f329441817273b42))
+
 ## [0.3.0](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.2.1...social-changelog-v0.3.0) (2025-05-13)
 
 
