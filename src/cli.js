@@ -80,14 +80,28 @@ export class CLI {
 		const token = this.#env.OPENAI_API_KEY;
 		const name = flags.name || `${org}/${repo}`;
 
+		let prompt = "";
+		if (flags.promptFile) {
+			try {
+				const fsp = await import("node:fs/promises");
+				prompt = await fsp.readFile(flags.promptFile, "utf8");
+			} catch (err) {
+				const message =
+					err instanceof Error ? err.message : String(err);
+				this.#console.error(`Error reading prompt file: ${message}`);
+				return 1;
+			}
+		}
+
 		try {
 			const release = await fetchRelease(`${org}/${repo}`, flags.tag);
 			const generator = githubToken
 				? new ChatCompletionPostGenerator(githubToken, {
 						baseUrl: GITHUB_BASE_URL,
 						model: GITHUB_MODEL,
+						prompt,
 					})
-				: new ResponseAPIPostGenerator(token);
+				: new ResponseAPIPostGenerator(token, { prompt });
 			const post = await generator.generateSocialPost(name, release);
 
 			this.#console.log(post);
@@ -97,7 +111,6 @@ export class CLI {
 			);
 			return 1;
 		}
-
 		return 0;
 	}
 
@@ -115,10 +128,17 @@ export class CLI {
 				name: { type: "string", short: "n" },
 				tag: { type: "string", short: "t" },
 				help: { type: "boolean", short: "h" },
+				"prompt-file": { type: "string" },
 			},
 			allowPositionals: false,
 			strict: false,
 		});
+
+		// Map kebab-case to camelCase for CLIArgs
+		if ("prompt-file" in flags) {
+			flags.promptFile = flags["prompt-file"];
+			delete flags["prompt-file"];
+		}
 
 		return /** @type {CLIArgs} */ (flags);
 	}
@@ -136,6 +156,7 @@ export class CLI {
 		this.#console.log("  --repo, -r The repository name");
 		this.#console.log("  --name, -n The name of the project");
 		this.#console.log("  --tag,  -t The release tag [default: latest]");
+		this.#console.log("  --prompt-file  Path to a custom prompt file");
 		this.#console.log("  --help, -h Show this help message");
 		this.#console.log("");
 	}

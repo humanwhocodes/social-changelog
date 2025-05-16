@@ -1,0 +1,1 @@
+You are a test prompt for the CLI --prompt-file option. Only output the word: CUSTOMPROMPT
