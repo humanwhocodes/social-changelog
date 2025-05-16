@@ -146,6 +146,7 @@ export interface CLIArgs {
 	name: string | undefined;
 	tag: string | undefined;
 	help: boolean | undefined;
+	promptFile?: string;
 }
 
 export interface GptMessage {

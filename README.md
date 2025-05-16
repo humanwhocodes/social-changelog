@@ -42,6 +42,7 @@ npx social-changelog --org <org> --repo <repo> --name <project-name>
 - `--repo, -r` - The repository name
 - `--name, -n` - (Optional) The display name of the project (defaults to org/repo)
 - `--tag, -t` - (Optional) Specific release tag to use (defaults to latest)
+- `--prompt-file` - (Optional) Path to a file containing a custom prompt to use instead of the default
 - `--help, -h` - Show help information
 
 ### CLI Examples
@@ -50,6 +51,12 @@ Generate post for latest release:
 
 ```bash
 npx social-changelog --org humanwhocodes --repo social-changelog
+```
+
+Use a custom prompt file:
+
+```bash
+npx social-changelog --org humanwhocodes --repo social-changelog --prompt-file ./my-prompt.txt
 ```
 
 By default, the `org/repo` will be used as the project name. You can override this by providing the `--name` option:

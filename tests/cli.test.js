@@ -7,6 +7,8 @@
 //-----------------------------------------------------------------------------
 
 import { strict as assert } from "node:assert";
+import path from "node:path";
+import fsp from "node:fs/promises";
 import { CLI } from "../src/cli.js";
 import { MockServer, FetchMocker } from "mentoss";
 
@@ -308,6 +310,57 @@ describe("CLI", () => {
 				}),
 				true,
 			);
+		});
+
+		it("should use custom prompt from --prompt-file option", async () => {
+			const promptPath = path.resolve(
+				"tests",
+				"fixtures",
+				"prompt-custom.txt",
+			);
+			const customPrompt = await fsp.readFile(promptPath, "utf8");
+
+			githubServer.get("/repos/test-org/test-repo/releases/latest", {
+				status: 200,
+				body: MOCK_RELEASE,
+			});
+
+			openAIServer.post(
+				{
+					url: "/v1/responses",
+					body: {
+						instructions: customPrompt,
+					},
+				},
+				{
+					status: 200,
+					body: {
+						id: "resp_456",
+						output: [
+							{
+								content: [
+									{
+										type: "output_text",
+										text: "CUSTOMPROMPT",
+									},
+								],
+							},
+						],
+					},
+				},
+			);
+
+			const exitCode = await cli.execute([
+				"--org",
+				"test-org",
+				"--repo",
+				"test-repo",
+				"--prompt-file",
+				promptPath,
+			]);
+
+			assert.equal(exitCode, 0);
+			assert.equal(testConsole.logs[0], "CUSTOMPROMPT");
 		});
 	});
 

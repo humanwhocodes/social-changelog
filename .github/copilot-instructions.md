@@ -36,13 +36,41 @@ x => x + x
 
 ```javascript
 for (let i = 0, n = str.length; i < 10; i++) {
-    if (x < 10) {
-        foo();
-    }
+	if (x < 10) {
+		foo();
+	}
 }
 
 function f(x: number, y: string): void { }
 ```
+
+## Project Structure
+
+- Use `src` for source code
+    - TypeScript types are found in `src/types.ts`
+- Use `tests` for test code
+    - Test files have the same name as the source file they are testing, but with a `.test.js` suffix
+    - Use a `fixtures` subfolder in `tests` for test data files (e.g., prompt files)
+
+## Coding Approach
+
+- Tests should always be updated to reflect the latest changes, especially for new CLI flags or options (e.g., `--prompt-file`)
+- The README file should always be updated to document new CLI options and usage examples
+- Use `async/await` for asynchronous code
+- Use `Promise.all` for parallel asynchronous code
+- When adding CLI flags, ensure argument parsing uses camelCase in code and kebab-case for CLI, and map as needed
+- Always handle file paths robustly in tests (prefer `path.resolve` for test fixture files)
+- `console` can only be used in `cli.js`.
+    - Use `console.log` for logging messages to the user
+    - Use `console.error` for errors
+    - Do not use `console` for debugging (except for temporary debug output during test troubleshooting)
+
+## Commands
+
+- Use `npm test` to run all tests
+    - To test an individual file use `npx mocha tests/<test-file>.test.js`
+- Use `npm run lint` to run the linter
+- Use `npm run fmt` to format the code
 
 ## OpenAI API
 
