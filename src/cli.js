@@ -9,7 +9,6 @@
 
 import { parseArgs } from "node:util";
 import { ResponseAPIPostGenerator } from "./response-api-post-generator.js";
-import { ChatCompletionPostGenerator } from "./chat-completion-post-generator.js";
 import { fetchRelease } from "./github.js";
 
 //-----------------------------------------------------------------------------
@@ -17,13 +16,6 @@ import { fetchRelease } from "./github.js";
 //-----------------------------------------------------------------------------
 
 /** @typedef {import("./types.js").CLIArgs} CLIArgs */
-
-//-----------------------------------------------------------------------------
-// Data
-//-----------------------------------------------------------------------------
-
-const GITHUB_BASE_URL = "https://models.github.ai/inference/";
-const GITHUB_MODEL = "openai/gpt-4.1-mini";
 
 //-----------------------------------------------------------------------------
 // Argument Parsing
@@ -76,9 +68,15 @@ export class CLI {
 		}
 
 		const { org, repo } = flags;
-		const githubToken = this.#env.GITHUB_TOKEN;
 		const token = this.#env.OPENAI_API_KEY;
 		const name = flags.name || `${org}/${repo}`;
+
+		if (!token && this.#env.GITHUB_TOKEN) {
+			this.#console.error(
+				"Error: The GitHub Models API has been retired. Please use an OPENAI_API_KEY instead.",
+			);
+			return 1;
+		}
 
 		let prompt = "";
 		if (flags.promptFile) {
@@ -95,13 +93,7 @@ export class CLI {
 
 		try {
 			const release = await fetchRelease(`${org}/${repo}`, flags.tag);
-			const generator = githubToken
-				? new ChatCompletionPostGenerator(githubToken, {
-						baseUrl: GITHUB_BASE_URL,
-						model: GITHUB_MODEL,
-						prompt,
-					})
-				: new ResponseAPIPostGenerator(token, { prompt });
+			const generator = new ResponseAPIPostGenerator(token, { prompt });
 			const post = await generator.generateSocialPost(name, release);
 
 			this.#console.log(post);

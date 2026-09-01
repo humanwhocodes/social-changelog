@@ -36,9 +36,8 @@ class TestConsole {
 
 const githubServer = new MockServer("https://api.github.com");
 const openAIServer = new MockServer("https://api.openai.com");
-const githubModelsServer = new MockServer("https://models.github.ai");
 const fetchMocker = new FetchMocker({
-	servers: [githubServer, openAIServer, githubModelsServer],
+	servers: [githubServer, openAIServer],
 });
 
 const MOCK_RELEASE = {
@@ -82,7 +81,6 @@ describe("CLI", () => {
 		fetchMocker.unmockGlobal();
 		githubServer.clear();
 		openAIServer.clear();
-		githubModelsServer.clear();
 	});
 
 	describe("constructor", () => {
@@ -257,35 +255,11 @@ describe("CLI", () => {
 			);
 		});
 
-		it("should use GitHub Models API when GITHUB_TOKEN is provided", async () => {
-			// Create CLI with GITHUB_TOKEN
+		it("should error when only GITHUB_TOKEN is provided", async () => {
+			// Create CLI with only GITHUB_TOKEN, no OPENAI_API_KEY
 			const githubTokenCli = new CLI({
 				console: testConsole,
 				env: { GITHUB_TOKEN: "github-token" },
-			});
-
-			// Setup mock responses
-			githubServer.get("/repos/test-org/test-repo/releases/latest", {
-				status: 200,
-				body: MOCK_RELEASE,
-			});
-
-			// Setup GitHub Models API response
-			githubModelsServer.post("/inference/chat/completions", {
-				status: 200,
-				body: {
-					choices: [
-						{
-							message: {
-								content: "Generated post with GitHub Models",
-							},
-						},
-					],
-				},
-				headers: {
-					"content-type": "application/json",
-					authorization: "Bearer github-token",
-				},
 			});
 
 			const exitCode = await githubTokenCli.execute([
@@ -295,21 +269,21 @@ describe("CLI", () => {
 				"test-repo",
 			]);
 
-			assert.equal(exitCode, 0);
-			assert.equal(
-				testConsole.logs[0],
-				"Generated post with GitHub Models",
+			assert.equal(exitCode, 1);
+			assert.ok(
+				testConsole.errors[0].includes(
+					"The GitHub Models API has been retired",
+				),
 			);
 
-			// Verify OpenAI was not called
-			assert.equal(openAIServer.called("/v1/responses"), false);
+			// Verify no network calls were made
 			assert.equal(
-				githubModelsServer.called({
-					url: "/inference/chat/completions",
-					method: "post",
-				}),
-				true,
+				githubServer.called(
+					"/repos/test-org/test-repo/releases/latest",
+				),
+				false,
 			);
+			assert.equal(openAIServer.called("/v1/responses"), false);
 		});
 
 		it("should use custom prompt from --prompt-file option", async () => {
