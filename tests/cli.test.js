@@ -36,8 +36,9 @@ class TestConsole {
 
 const githubServer = new MockServer("https://api.github.com");
 const openAIServer = new MockServer("https://api.openai.com");
+const anthropicServer = new MockServer("https://api.anthropic.com");
 const fetchMocker = new FetchMocker({
-	servers: [githubServer, openAIServer],
+	servers: [githubServer, openAIServer, anthropicServer],
 });
 
 const MOCK_RELEASE = {
@@ -56,6 +57,16 @@ const MOCK_RESPONSE = {
 					text: "Generated post",
 				},
 			],
+		},
+	],
+};
+
+const MOCK_ANTHROPIC_RESPONSE = {
+	id: "msg_123",
+	content: [
+		{
+			type: "text",
+			text: "Generated post",
 		},
 	],
 };
@@ -81,6 +92,7 @@ describe("CLI", () => {
 		fetchMocker.unmockGlobal();
 		githubServer.clear();
 		openAIServer.clear();
+		anthropicServer.clear();
 	});
 
 	describe("constructor", () => {
@@ -284,6 +296,94 @@ describe("CLI", () => {
 				false,
 			);
 			assert.equal(openAIServer.called("/v1/responses"), false);
+		});
+
+		it("should generate social post using ANTHROPIC_API_KEY when OPENAI_API_KEY is not set", async () => {
+			const anthropicCli = new CLI({
+				console: testConsole,
+				env: { ANTHROPIC_API_KEY: "test-anthropic-token" },
+			});
+
+			githubServer.get("/repos/test-org/test-repo/releases/latest", {
+				status: 200,
+				body: MOCK_RELEASE,
+			});
+
+			anthropicServer.post("/v1/messages", {
+				status: 200,
+				body: MOCK_ANTHROPIC_RESPONSE,
+				headers: {
+					"content-type": "application/json",
+					"x-api-key": "test-anthropic-token",
+				},
+			});
+
+			const exitCode = await anthropicCli.execute([
+				"--org",
+				"test-org",
+				"--repo",
+				"test-repo",
+			]);
+
+			assert.equal(exitCode, 0);
+			assert.equal(testConsole.logs[0], "Generated post");
+		});
+
+		it("should use OPENAI_API_KEY when both OPENAI_API_KEY and ANTHROPIC_API_KEY are set", async () => {
+			const bothKeysCli = new CLI({
+				console: testConsole,
+				env: {
+					OPENAI_API_KEY: "test-token",
+					ANTHROPIC_API_KEY: "test-anthropic-token",
+				},
+			});
+
+			githubServer.get("/repos/test-org/test-repo/releases/latest", {
+				status: 200,
+				body: MOCK_RELEASE,
+			});
+
+			openAIServer.post("/v1/responses", {
+				status: 200,
+				body: MOCK_RESPONSE,
+				headers: {
+					"content-type": "application/json",
+					authorization: "******",
+				},
+			});
+
+			const exitCode = await bothKeysCli.execute([
+				"--org",
+				"test-org",
+				"--repo",
+				"test-repo",
+			]);
+
+			assert.equal(exitCode, 0);
+			assert.equal(testConsole.logs[0], "Generated post");
+			assert.equal(anthropicServer.called("/v1/messages"), false);
+		});
+
+		it("should error when no API key is provided", async () => {
+			const noKeyCli = new CLI({
+				console: testConsole,
+				env: {},
+			});
+
+			githubServer.get("/repos/test-org/test-repo/releases/latest", {
+				status: 200,
+				body: MOCK_RELEASE,
+			});
+
+			const exitCode = await noKeyCli.execute([
+				"--org",
+				"test-org",
+				"--repo",
+				"test-repo",
+			]);
+
+			assert.equal(exitCode, 1);
+			assert.ok(testConsole.errors[0].includes("Missing API key"));
 		});
 
 		it("should use custom prompt from --prompt-file option", async () => {

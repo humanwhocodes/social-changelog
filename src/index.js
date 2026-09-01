@@ -11,5 +11,6 @@ export {
 	ResponseAPIPostGenerator,
 } from "./response-api-post-generator.js";
 export { ChatCompletionPostGenerator } from "./chat-completion-post-generator.js";
+export { AnthropicPostGenerator } from "./anthropic-post-generator.js";
 export { validateRepo, fetchRelease } from "./github.js";
 export { CLI } from "./cli.js";
