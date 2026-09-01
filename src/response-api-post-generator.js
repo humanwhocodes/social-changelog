@@ -173,7 +173,7 @@ export class ResponseAPIPostGenerator {
 
 		while (attempts < MAX_RETRIES) {
 			const responseData = await this.#fetchCompletion({
-				model: "gpt-4o-mini",
+				model: "gpt-5.6-luna",
 				instructions: attempts === 0 ? systemPrompt : null,
 				input:
 					attempts === 0
