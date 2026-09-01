@@ -36,7 +36,6 @@ export ANTHROPIC_API_KEY=your-api-key
 > [!NOTE]
 > The GitHub Models API has been retired. If you previously used `GITHUB_TOKEN`, please switch to using an `OPENAI_API_KEY` instead.
 
-
 Then you can generate posts using:
 
 ```bash

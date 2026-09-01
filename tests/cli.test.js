@@ -383,9 +383,7 @@ describe("CLI", () => {
 			]);
 
 			assert.equal(exitCode, 1);
-			assert.ok(
-				testConsole.errors[0].includes("Missing Anthropic API token"),
-			);
+			assert.ok(testConsole.errors[0].includes("Missing API key"));
 		});
 
 		it("should use custom prompt from --prompt-file option", async () => {

@@ -80,6 +80,13 @@ export class CLI {
 			return 1;
 		}
 
+		if (!openaiToken && !anthropicToken) {
+			this.#console.error(
+				"Error: Missing API key. Please set an OPENAI_API_KEY or ANTHROPIC_API_KEY environment variable.",
+			);
+			return 1;
+		}
+
 		let prompt = "";
 		if (flags.promptFile) {
 			try {
