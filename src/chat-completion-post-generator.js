@@ -29,7 +29,7 @@ const MAX_CHARACTERS = 280;
 const MAX_RETRIES = 3;
 const URL_LENGTH = 27; // Bluesky counts URLs as 27 characters
 const API_BASE_URL = "https://api.openai.com/v1/";
-const DEFAULT_MODEL = "gpt-4o-mini";
+const DEFAULT_MODEL = "gpt-5.6-luna";
 
 //-----------------------------------------------------------------------------
 // Helpers

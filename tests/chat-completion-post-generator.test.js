@@ -133,6 +133,26 @@ describe("ChatCompletionPostGenerator", () => {
 				post,
 				MOCK_COMPLETION_RESPONSE.choices[0].message.content,
 			);
+			assert.ok(
+				server.called({
+					method: "POST",
+					url: "/v1/chat/completions",
+					body: {
+						model: "gpt-5.6-luna",
+						messages: [
+							{
+								role: "system",
+								content: MOCK_PROMPT,
+							},
+							{
+								role: "user",
+								content: `Create a post summarizing this release for testproject ${MOCK_RELEASE.version}: ${MOCK_RELEASE.details}\n\nURL is ${MOCK_RELEASE.url}`,
+							},
+						],
+						temperature: 0.7,
+					},
+				}),
+			);
 		});
 
 		it("should generate post using prompt from file when no prompt provided", async () => {
