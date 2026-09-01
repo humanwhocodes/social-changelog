@@ -10,8 +10,6 @@ A tool that generates social media posts from GitHub releases using AI. Given a 
 
 This tool uses [OpenAI](https://platform.openai.com) `gpt-4o-mini` and an OpenAI API token is required.
 
-Alternatively, you can use GitHub Models by providing a GitHub token instead.
-
 ## Installation
 
 ```bash
@@ -20,15 +18,15 @@ npm install @humanwhocodes/social-changelog
 
 ## CLI Usage
 
-The command line interface requires either an OpenAI API key or a GitHub token to be set in the environment:
+The command line interface requires an OpenAI API key to be set in the environment:
 
 ```bash
-# Using OpenAI API
 export OPENAI_API_KEY=your-api-key
-
-# OR using GitHub Models
-export GITHUB_TOKEN=your-github-token
 ```
+
+> [!NOTE]
+> The GitHub Models API has been retired. If you previously used `GITHUB_TOKEN`, please switch to using an `OPENAI_API_KEY` instead.
+
 
 Then you can generate posts using:
 
@@ -87,20 +85,6 @@ If you'd like to use Social Changelog in a GitHub Actions workflow file, you can
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
 
-Alternatively, you can use GitHub Models instead of OpenAI by using the built-in [`GITHUB_TOKEN`](https://docs.github.com/en/github-models/integrating-ai-models-into-your-development-workflow#using-ai-models-with-github-actions):
-
-```yaml
-# be sure to set permissions for models
-permissions:
-  models: read
-
-# Generates the social media post using GitHub Models
-- run: npx @humanwhocodes/social-changelog --org ${{ github.repository_owner }} --repo ${{ github.event.repository.name }} > social-post.txt
-  if: ${{ steps.release.outputs.release_created }}
-  env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
-
 ## API Usage
 
 ### Post Generators
@@ -108,7 +92,7 @@ permissions:
 The library provides two post generator classes:
 
 - `ResponseAPIPostGenerator` (also exported as `PostGenerator` for backwards compatibility) - Uses OpenAI's Responses API
-- `ChatCompletionPostGenerator` - Uses the Chat Completions API, compatible with both OpenAI and GitHub Models
+- `ChatCompletionPostGenerator` - Uses the Chat Completions API, compatible with OpenAI and other OpenAI-compatible providers
 
 ```javascript
 import {
@@ -124,12 +108,12 @@ const openaiGenerator = new ResponseAPIPostGenerator(
 	},
 );
 
-// Or use GitHub Models with Chat Completions API
-const githubGenerator = new ChatCompletionPostGenerator(
-	process.env.GITHUB_TOKEN,
+// Or use the Chat Completions API with a custom OpenAI-compatible endpoint
+const chatCompletionGenerator = new ChatCompletionPostGenerator(
+	process.env.OPENAI_API_KEY,
 	{
-		baseUrl: "https://models.github.ai/inference/",
-		model: "openai/gpt-4.1-mini",
+		baseUrl: "https://api.openai.com/v1/",
+		model: "gpt-4o-mini",
 		prompt: "Optional custom prompt",
 	},
 );
