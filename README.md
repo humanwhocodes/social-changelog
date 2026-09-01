@@ -112,6 +112,8 @@ const openaiGenerator = new ResponseAPIPostGenerator(
 const chatCompletionGenerator = new ChatCompletionPostGenerator(
 	process.env.OPENAI_API_KEY,
 	{
+		baseUrl: "https://api.openai.com/v1/",
+		model: "gpt-4o-mini",
 		prompt: "Optional custom prompt",
 	},
 );
