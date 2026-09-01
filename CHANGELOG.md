@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.4.0...social-changelog-v0.5.0) (2026-09-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove GitHub Models API support (API was retired) ([#39](https://github.com/humanwhocodes/social-changelog/issues/39))
+
+### Features
+
+* Remove GitHub Models API support (API was retired) ([#39](https://github.com/humanwhocodes/social-changelog/issues/39)) ([a283092](https://github.com/humanwhocodes/social-changelog/commit/a283092115530d76b2275d4dc7a709d3c197c0b5))
+
 ## [0.4.0](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.3.0...social-changelog-v0.4.0) (2025-05-16)
 
 
