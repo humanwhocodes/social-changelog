@@ -9,6 +9,7 @@
 
 import { parseArgs } from "node:util";
 import { ResponseAPIPostGenerator } from "./response-api-post-generator.js";
+import { AnthropicPostGenerator } from "./anthropic-post-generator.js";
 import { fetchRelease } from "./github.js";
 
 //-----------------------------------------------------------------------------
@@ -68,10 +69,11 @@ export class CLI {
 		}
 
 		const { org, repo } = flags;
-		const token = this.#env.OPENAI_API_KEY;
+		const openaiToken = this.#env.OPENAI_API_KEY;
+		const anthropicToken = this.#env.ANTHROPIC_API_KEY;
 		const name = flags.name || `${org}/${repo}`;
 
-		if (!token && this.#env.GITHUB_TOKEN) {
+		if (!openaiToken && !anthropicToken && this.#env.GITHUB_TOKEN) {
 			this.#console.error(
 				"Error: The GitHub Models API has been retired. Please use an OPENAI_API_KEY instead.",
 			);
@@ -93,7 +95,9 @@ export class CLI {
 
 		try {
 			const release = await fetchRelease(`${org}/${repo}`, flags.tag);
-			const generator = new ResponseAPIPostGenerator(token, { prompt });
+			const generator = openaiToken
+				? new ResponseAPIPostGenerator(openaiToken, { prompt })
+				: new AnthropicPostGenerator(anthropicToken, { prompt });
 			const post = await generator.generateSocialPost(name, release);
 
 			this.#console.log(post);

@@ -140,6 +140,25 @@ export interface OpenAIResponse {
 	metadata: object;
 }
 
+export interface AnthropicResponseContent {
+	type: "text";
+	text: string;
+}
+
+export interface AnthropicResponse {
+	id: string;
+	type: "message";
+	role: string;
+	model: string;
+	content: Array<AnthropicResponseContent>;
+	stop_reason: null | string;
+	stop_sequence: null | string;
+	usage: {
+		input_tokens: number;
+		output_tokens: number;
+	};
+}
+
 export interface CLIArgs {
 	org: string | undefined;
 	repo: string | undefined;

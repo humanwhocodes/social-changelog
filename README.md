@@ -8,7 +8,7 @@ If you find this useful, please consider supporting my work with a [donation](ht
 
 A tool that generates social media posts from GitHub releases using AI. Given a GitHub repository and release, it creates an engaging social post summarizing the key changes and improvements. This is useful for automatically creating announcement posts for new releases.
 
-This tool uses [OpenAI](https://platform.openai.com) `gpt-5.6-luna` and an OpenAI API token is required.
+This tool uses [OpenAI](https://platform.openai.com) `gpt-5.6-luna` or [Anthropic](https://www.anthropic.com) `claude-haiku-4-5` and requires an OpenAI or Anthropic API token.
 
 ## Installation
 
@@ -18,11 +18,20 @@ npm install @humanwhocodes/social-changelog
 
 ## CLI Usage
 
-The command line interface requires an OpenAI API key to be set in the environment:
+The command line interface requires an OpenAI or Anthropic API key to be set in the environment:
 
 ```bash
 export OPENAI_API_KEY=your-api-key
 ```
+
+or
+
+```bash
+export ANTHROPIC_API_KEY=your-api-key
+```
+
+> [!NOTE]
+> If both `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` are set, `OPENAI_API_KEY` takes precedence.
 
 > [!NOTE]
 > The GitHub Models API has been retired. If you previously used `GITHUB_TOKEN`, please switch to using an `OPENAI_API_KEY` instead.
@@ -89,15 +98,17 @@ If you'd like to use Social Changelog in a GitHub Actions workflow file, you can
 
 ### Post Generators
 
-The library provides two post generator classes:
+The library provides three post generator classes:
 
 - `ResponseAPIPostGenerator` (also exported as `PostGenerator` for backwards compatibility) - Uses OpenAI's Responses API
 - `ChatCompletionPostGenerator` - Uses the Chat Completions API, compatible with OpenAI and other OpenAI-compatible providers
+- `AnthropicPostGenerator` - Uses Anthropic's Messages API, defaults to the `claude-haiku-4-5` model
 
 ```javascript
 import {
 	ResponseAPIPostGenerator,
 	ChatCompletionPostGenerator,
+	AnthropicPostGenerator,
 } from "@humanwhocodes/social-changelog";
 
 // Create generator instance with OpenAI API using Responses API
@@ -118,7 +129,15 @@ const chatCompletionGenerator = new ChatCompletionPostGenerator(
 	},
 );
 
-// Generate a post (works with either generator)
+// Or use Anthropic's Claude models
+const anthropicGenerator = new AnthropicPostGenerator(
+	process.env.ANTHROPIC_API_KEY,
+	{
+		prompt: "Optional custom prompt",
+	},
+);
+
+// Generate a post (works with any generator)
 const post = await generator.generateSocialPost("Project Name", {
 	url: "https://github.com/org/repo/releases/v1.0.0",
 	tagName: "v1.0.0",
