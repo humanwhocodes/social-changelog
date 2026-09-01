@@ -18,7 +18,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "publishConfig": {
     "access": "public"
@@ -79,5 +79,8 @@
     "prettier": "^3.3.3",
     "typescript": "^5.6.3",
     "yorkie": "2.0.0"
+  },
+  "allowScripts": {
+    "yorkie@2.0.0": true
   }
 }
