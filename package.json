@@ -1,6 +1,6 @@
 {
   "name": "@humanwhocodes/social-changelog",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Generates social posts from a GitHub release changelog.",
   "type": "module",
   "module": "dist/index.js",
