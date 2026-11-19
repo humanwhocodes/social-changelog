@@ -109,7 +109,7 @@ describe("ResponseAPIPostGenerator", () => {
 					method: "POST",
 					url: "/v1/responses",
 					body: {
-						model: "gpt-5.6-luna",
+						model: "gpt-6-luna",
 						instructions: MOCK_PROMPT,
 						input: `Create a post summarizing this release for testproject ${MOCK_RELEASE.version}: ${MOCK_RELEASE.details}\n\nURL is ${MOCK_RELEASE.url}`,
 						previous_response_id: null,

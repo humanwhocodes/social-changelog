@@ -138,7 +138,7 @@ describe("ChatCompletionPostGenerator", () => {
 					method: "POST",
 					url: "/v1/chat/completions",
 					body: {
-						model: "gpt-5.6-luna",
+						model: "gpt-6-luna",
 						messages: [
 							{
 								role: "system",

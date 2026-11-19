@@ -8,7 +8,7 @@ If you find this useful, please consider supporting my work with a [donation](ht
 
 A tool that generates social media posts from GitHub releases using AI. Given a GitHub repository and release, it creates an engaging social post summarizing the key changes and improvements. This is useful for automatically creating announcement posts for new releases.
 
-This tool uses [OpenAI](https://platform.openai.com) `gpt-5.6-luna` or [Anthropic](https://www.anthropic.com) `claude-haiku-4-5` and requires an OpenAI or Anthropic API token.
+This tool uses [OpenAI](https://platform.openai.com) `gpt-6-luna` or [Anthropic](https://www.anthropic.com) `claude-haiku-4-5` and requires an OpenAI or Anthropic API token.
 
 ## Installation
 
