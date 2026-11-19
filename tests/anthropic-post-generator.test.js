@@ -32,7 +32,7 @@ const MOCK_RESPONSE = {
 	id: "msg_123",
 	type: "message",
 	role: "assistant",
-	model: "claude-haiku-4-5",
+	model: "claude-haiku-5-5",
 	content: [
 		{
 			type: "text",
@@ -111,7 +111,7 @@ describe("AnthropicPostGenerator", () => {
 					method: "POST",
 					url: "/v1/messages",
 					body: {
-						model: "claude-haiku-4-5",
+						model: "claude-haiku-5-5",
 						max_tokens: 1024,
 						system: MOCK_PROMPT,
 						messages: [

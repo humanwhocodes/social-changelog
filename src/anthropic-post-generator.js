@@ -28,7 +28,7 @@ const MAX_RETRIES = 3;
 const URL_LENGTH = 27; // Bluesky counts URLs as 27 characters
 const API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
-const DEFAULT_MODEL = "claude-haiku-4-5";
+const DEFAULT_MODEL = "claude-haiku-5-5";
 const MAX_TOKENS = 1024;
 
 //-----------------------------------------------------------------------------
