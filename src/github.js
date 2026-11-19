@@ -3,7 +3,7 @@
  * @author Nicholas C. Zakas
  */
 
-/* globals fetch */
+import { fetchApi } from "./api.js";
 
 //-----------------------------------------------------------------------------
 // Type Definitions
@@ -62,13 +62,7 @@ export function validateRepo(repo) {
  */
 export async function fetchRelease(repo, tagName) {
 	const url = `${GITHUB_API}/${repo}/releases/${tagName ? `tags/${tagName}` : "latest"}`;
-	const response = await fetch(url);
-
-	if (!response.ok) {
-		throw new Error(
-			`Error fetching release from ${url}: ${response.status} ${response.statusText}`,
-		);
-	}
+	const response = await fetchApi(url, undefined, "Error fetching release");
 
 	const release = /** @type {GitHubRelease} */ (await response.json());
 

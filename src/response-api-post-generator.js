@@ -3,8 +3,6 @@
  * @author Nicholas C. Zakas
  */
 
-/* global fetch */
-
 //-----------------------------------------------------------------------------
 // Imports
 //-----------------------------------------------------------------------------
@@ -12,6 +10,7 @@
 import fsp from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fetchApi } from "./api.js";
 
 //-----------------------------------------------------------------------------
 // Type Definitions
@@ -118,26 +117,24 @@ export class ResponseAPIPostGenerator {
 		input,
 		previousResponseId = null,
 	}) {
-		const response = await fetch("https://api.openai.com/v1/responses", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${this.#token}`,
+		const response = await fetchApi(
+			"https://api.openai.com/v1/responses",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${this.#token}`,
+				},
+				body: JSON.stringify({
+					model,
+					instructions,
+					input,
+					previous_response_id: previousResponseId,
+					temperature: 0.7,
+				}),
 			},
-			body: JSON.stringify({
-				model,
-				instructions,
-				input,
-				previous_response_id: previousResponseId,
-				temperature: 0.7,
-			}),
-		});
-
-		if (!response.ok) {
-			throw new Error(
-				`${response.status} ${response.statusText}: Response generation failed`,
-			);
-		}
+			"Response generation failed",
+		);
 
 		return await response.json();
 	}
