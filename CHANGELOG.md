@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.6.0...social-changelog-v0.6.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* report API failure details ([#45](https://github.com/humanwhocodes/social-changelog/issues/45)) ([6f364bc](https://github.com/humanwhocodes/social-changelog/commit/6f364bcc8f6cdbcbb993699e3ff4631c9fe83f74))
+
 ## [0.6.0](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.5.0...social-changelog-v0.6.0) (2026-09-01)
 
 
