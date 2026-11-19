@@ -11,12 +11,22 @@ import { parseArgs } from "node:util";
 import { ResponseAPIPostGenerator } from "./response-api-post-generator.js";
 import { AnthropicPostGenerator } from "./anthropic-post-generator.js";
 import { fetchRelease } from "./github.js";
+import { ApiError } from "./api.js";
 
 //-----------------------------------------------------------------------------
 // Type Definitions
 //-----------------------------------------------------------------------------
 
 /** @typedef {import("./types.js").CLIArgs} CLIArgs */
+
+/**
+ * Logs an API failure.
+ * @param {string} message The failure details.
+ * @returns {void}
+ */
+export function logApiError(message) {
+	globalThis.console.error(message);
+}
 
 //-----------------------------------------------------------------------------
 // Argument Parsing
@@ -109,9 +119,16 @@ export class CLI {
 
 			this.#console.log(post);
 		} catch (error) {
-			this.#console.error(
-				`Error: ${/** @type {Error} */ (error).message}`,
-			);
+			if (
+				!(
+					error instanceof ApiError &&
+					this.#console === globalThis.console
+				)
+			) {
+				this.#console.error(
+					`Error: ${/** @type {Error} */ (error).message}`,
+				);
+			}
 			return 1;
 		}
 		return 0;

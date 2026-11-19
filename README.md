@@ -95,6 +95,10 @@ If you'd like to use Social Changelog in a GitHub Actions workflow file, you can
 
 ## API Usage
 
+Failed API requests are logged to standard error with the URL, status code, and
+response body when available, and also reject with an error. Response bodies may
+contain sensitive information.
+
 ### Post Generators
 
 The library provides three post generator classes:

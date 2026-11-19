@@ -3,8 +3,6 @@
  * @author Nicholas C. Zakas
  */
 
-/* global fetch */
-
 //-----------------------------------------------------------------------------
 // Imports
 //-----------------------------------------------------------------------------
@@ -12,6 +10,7 @@
 import fsp from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { fetchApi } from "./api.js";
 
 //-----------------------------------------------------------------------------
 // Type Definitions
@@ -123,31 +122,29 @@ export class AnthropicPostGenerator {
 	 * @throws {Error} If the response is not ok.
 	 */
 	async #fetchCompletion({ system, input }) {
-		const response = await fetch(API_URL, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"x-api-key": this.#token,
-				"anthropic-version": ANTHROPIC_VERSION,
+		const response = await fetchApi(
+			API_URL,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"x-api-key": this.#token,
+					"anthropic-version": ANTHROPIC_VERSION,
+				},
+				body: JSON.stringify({
+					model: this.#model,
+					max_tokens: MAX_TOKENS,
+					system,
+					messages: [
+						{
+							role: "user",
+							content: input,
+						},
+					],
+				}),
 			},
-			body: JSON.stringify({
-				model: this.#model,
-				max_tokens: MAX_TOKENS,
-				system,
-				messages: [
-					{
-						role: "user",
-						content: input,
-					},
-				],
-			}),
-		});
-
-		if (!response.ok) {
-			throw new Error(
-				`${response.status} ${response.statusText}: Response generation failed`,
-			);
-		}
+			"Response generation failed",
+		);
 
 		return await response.json();
 	}

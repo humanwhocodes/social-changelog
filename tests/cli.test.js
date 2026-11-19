@@ -239,6 +239,13 @@ describe("CLI", () => {
 
 			assert.equal(exitCode, 1);
 			assert.ok(testConsole.errors[0].includes("Error fetching release"));
+			assert.ok(
+				testConsole.errors[0].includes(
+					"https://api.github.com/repos/test-org/test-repo/releases/latest",
+				),
+			);
+			assert.ok(testConsole.errors[0].includes("404"));
+			assert.ok(testConsole.errors[0].includes("Not Found"));
 		});
 
 		it("should handle OpenAI API errors", async () => {
@@ -265,6 +272,13 @@ describe("CLI", () => {
 			assert.ok(
 				testConsole.errors[0].includes("Response generation failed"),
 			);
+			assert.ok(
+				testConsole.errors[0].includes(
+					"https://api.openai.com/v1/responses",
+				),
+			);
+			assert.ok(testConsole.errors[0].includes("500"));
+			assert.ok(testConsole.errors[0].includes("Internal Server Error"));
 		});
 
 		it("should error when only GITHUB_TOKEN is provided", async () => {
