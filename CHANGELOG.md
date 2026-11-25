@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.6.1...social-changelog-v0.6.2) (2026-11-25)
+
+
+### Bug Fixes
+
+* **openai:** omit unsupported temperature parameter ([#48](https://github.com/humanwhocodes/social-changelog/issues/48)) ([a20b2f3](https://github.com/humanwhocodes/social-changelog/commit/a20b2f305f1b12c0fbc0bb27707a5f46c8410fba))
+
 ## [0.6.1](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.6.0...social-changelog-v0.6.1) (2026-11-19)
 
 
