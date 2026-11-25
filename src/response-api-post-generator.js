@@ -145,11 +145,14 @@ export class ResponseAPIPostGenerator {
 	 * @throws {Error} If no content is found.
 	 */
 	#extractGeneratedText(responseData) {
-		const message = responseData.output?.[0]?.content?.[0]?.text;
-		if (!message) {
-			throw new Error("No content received from OpenAI");
+		for (const item of responseData.output ?? []) {
+			for (const content of item.content ?? []) {
+				if (content.type === "output_text" && content.text) {
+					return content.text;
+				}
+			}
 		}
-		return message;
+		throw new Error("No content received from OpenAI");
 	}
 
 	/**

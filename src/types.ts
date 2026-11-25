@@ -84,17 +84,17 @@ export interface ReleaseInfo {
 }
 
 export interface OpenAIResponseContent {
-	type: "output_text";
-	text: string;
-	annotations: Array<unknown>;
+	type: string;
+	text?: string;
+	annotations?: Array<unknown>;
 }
 
 export interface OpenAIResponseMessage {
-	type: "message";
+	type: string;
 	id: string;
-	status: string;
-	role: string;
-	content: Array<OpenAIResponseContent>;
+	status?: string;
+	role?: string;
+	content?: Array<OpenAIResponseContent>;
 }
 
 export interface OpenAIResponse {
