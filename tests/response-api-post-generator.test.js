@@ -181,7 +181,13 @@ describe("ResponseAPIPostGenerator", () => {
 			const responses = [
 				{
 					id: "resp_long",
-					output: [{ content: [{ text: "x".repeat(281) }] }],
+					output: [
+						{
+							content: [
+								{ type: "output_text", text: "x".repeat(281) },
+							],
+						},
+					],
 				},
 				MOCK_RESPONSE,
 			];
@@ -256,6 +262,59 @@ describe("ResponseAPIPostGenerator", () => {
 			server.post("/v1/responses", {
 				status: 200,
 				body: { output: [] },
+			});
+
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
+				prompt: MOCK_PROMPT,
+			});
+
+			await assert.rejects(
+				() => generator.generateSocialPost("testproject", MOCK_RELEASE),
+				/No content received from OpenAI/,
+			);
+		});
+
+		it("should find output text after reasoning and non-text content", async () => {
+			server.post("/v1/responses", {
+				status: 200,
+				body: {
+					output: [
+						{ type: "reasoning", summary: [] },
+						{
+							type: "message",
+							content: [
+								{ type: "refusal", refusal: "Not a post" },
+								{ type: "output_text", text: "Release post" },
+							],
+						},
+					],
+				},
+			});
+
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
+				prompt: MOCK_PROMPT,
+			});
+
+			assert.strictEqual(
+				await generator.generateSocialPost("testproject", MOCK_RELEASE),
+				"Release post",
+			);
+		});
+
+		it("should reject responses without output text", async () => {
+			server.post("/v1/responses", {
+				status: 200,
+				body: {
+					output: [
+						{ type: "reasoning", summary: [] },
+						{
+							type: "message",
+							content: [
+								{ type: "refusal", refusal: "Not a post" },
+							],
+						},
+					],
+				},
 			});
 
 			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
