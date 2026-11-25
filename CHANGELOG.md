@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.6.2...social-changelog-v0.6.3) (2026-11-25)
+
+
+### Bug Fixes
+
+* **openai:** extract text after reasoning output ([#50](https://github.com/humanwhocodes/social-changelog/issues/50)) ([419b008](https://github.com/humanwhocodes/social-changelog/commit/419b008f75cf14d0df63c723e36257c8b0f902dd))
+
 ## [0.6.2](https://github.com/humanwhocodes/social-changelog/compare/social-changelog-v0.6.1...social-changelog-v0.6.2) (2026-11-25)
 
 
