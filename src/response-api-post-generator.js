@@ -130,7 +130,6 @@ export class ResponseAPIPostGenerator {
 					instructions,
 					input,
 					previous_response_id: previousResponseId,
-					temperature: 0.7,
 				}),
 			},
 			"Response generation failed",

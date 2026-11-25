@@ -113,7 +113,6 @@ describe("ResponseAPIPostGenerator", () => {
 						instructions: MOCK_PROMPT,
 						input: `Create a post summarizing this release for testproject ${MOCK_RELEASE.version}: ${MOCK_RELEASE.details}\n\nURL is ${MOCK_RELEASE.url}`,
 						previous_response_id: null,
-						temperature: 0.7,
 					},
 				}),
 			);
@@ -175,6 +174,48 @@ describe("ResponseAPIPostGenerator", () => {
 				MOCK_RELEASE,
 			);
 			assert.strictEqual(post, "Short enough response");
+		});
+
+		it("should omit temperature from initial and retry requests", async () => {
+			const requestBodies = [];
+			const responses = [
+				{
+					id: "resp_long",
+					output: [{ content: [{ text: "x".repeat(281) }] }],
+				},
+				MOCK_RESPONSE,
+			];
+
+			for (const response of responses) {
+				server.post("/v1/responses", async request => {
+					requestBodies.push(await request.json());
+					return { body: response };
+				});
+			}
+
+			const generator = new ResponseAPIPostGenerator(OPENAI_TOKEN, {
+				prompt: MOCK_PROMPT,
+			});
+			const post = await generator.generateSocialPost(
+				"testproject",
+				MOCK_RELEASE,
+			);
+
+			assert.strictEqual(post, MOCK_RESPONSE.output[0].content[0].text);
+			assert.deepStrictEqual(requestBodies, [
+				{
+					model: "gpt-6-luna",
+					instructions: MOCK_PROMPT,
+					input: `Create a post summarizing this release for testproject ${MOCK_RELEASE.version}: ${MOCK_RELEASE.details}\n\nURL is ${MOCK_RELEASE.url}`,
+					previous_response_id: null,
+				},
+				{
+					model: "gpt-6-luna",
+					instructions: null,
+					input: "The previous response was too long. Make it shorter.",
+					previous_response_id: "resp_long",
+				},
+			]);
 		});
 
 		it("should generate post using prompt from file when no prompt provided", async () => {
